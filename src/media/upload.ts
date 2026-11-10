@@ -34,7 +34,10 @@ function uploadToStorage(ticket: MediaTicket, blob: Blob, onProgress: (p: number
       const path = (ticket.objectPath ?? '').split('/').map(encodeURIComponent).join('/')
       xhr.open('POST', `${env.supabase.url}/storage/v1/object/${encodeURIComponent(bucket)}/${path}`)
       xhr.setRequestHeader('apikey', env.supabase.publishableKey)
-      xhr.setRequestHeader('Authorization', `Bearer ${env.supabase.publishableKey}`)
+      // La clave publicable nueva (sb_publishable_…) no es un JWT: va solo en `apikey`. El JWT anon antiguo, también como Bearer.
+      if (env.supabase.publishableKey.startsWith('eyJ')) {
+        xhr.setRequestHeader('Authorization', `Bearer ${env.supabase.publishableKey}`)
+      }
       xhr.setRequestHeader('Content-Type', 'image/webp')
       xhr.setRequestHeader('x-upsert', 'false')
       publicUrl = `${env.supabase.url}/storage/v1/object/public/${encodeURIComponent(bucket)}/${path}`
